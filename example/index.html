@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - postprocessing - bloom-blend</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #ffffff;
+				margin: 0px;
+				overflow: hidden;
+				text-align:center;
+			}
+		</style>
+	</head>
+    <body>
+		<script src="./js/three.min.js"></script>
+		<script src="./js/CopyShader.js"></script>
+		<script src="./js/RenderPass.js"></script>
+		<script src="./js/MaskPass.js"></script>
+		<script src="./js/ShaderPass.js"></script>
+		<script src="../BloomBlendPass.js"></script>
+		<script src="./js/EffectComposer.js"></script>
+		<script src="./js/dat.gui.min.js"></script>
+        <script>
+
+			var container;
+			var camera, scene, renderer, composer, pass;
+            var clock, box;
+
+			var width = window.innerWidth;
+			var height = window.innerHeight;
+
+            init();
+            animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 70, width / height, 1, 3000 );
+				camera.position.z = 2;
+
+				scene = new THREE.Scene();
+
+                clock = new THREE.Clock();
+
+                box = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 1, 1),
+                    new THREE.MeshPhongMaterial({
+                        color : 0x2194ce,
+                        shininess : 30
+                    })
+                );
+                scene.add(box);
+
+                var light0 = new THREE.DirectionalLight(0xffffff, 1.0);
+                light0.position.set(20, 30, 20);
+
+                scene.add(light0);
+
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setClearColor(0xffffff);
+				renderer.setSize( width, height );
+				container.appendChild( renderer.domElement );
+
+				var effectController  = {
+					amount : 2.0,
+					opacity: 1.0
+				};
+
+				composer = new THREE.EffectComposer( renderer );
+
+                composer.addPass(new THREE.RenderPass(scene, camera));
+                pass = new THREE.BloomBlendPass(effectController.amount, effectController.opacity, new THREE.Vector2(width, height));
+                pass.renderToScreen = true;
+                composer.addPass(pass);
+
+				var matChanger = function( ) {
+					pass.amount = effectController.amount;
+					pass.opacity = effectController.opacity;
+				};
+
+				var gui = new dat.GUI();
+				gui.add( effectController, "amount", 0.0, 3.0, 0.025 ).onChange( matChanger );
+				gui.add( effectController, "opacity", 0.0, 1.0, 0.001 ).onChange( matChanger );
+				gui.close();
+
+            };
+
+            function animate() {
+
+				requestAnimationFrame( animate, renderer.domElement );
+
+				render();
+
+            }
+
+			function render() {
+                var dt = clock.getDelta();
+				box.rotation.x += dt * 0.4;
+				box.rotation.y += dt * 0.5;
+				composer.render(dt);
+			}
+
+        </script>
+    </body>
+</html>
