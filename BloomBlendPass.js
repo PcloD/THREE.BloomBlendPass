@@ -3,6 +3,7 @@
  */
 
 THREE.BloomBlendPass = function ( amount, opacity, resolution ) {
+    THREE.Pass.call(this);
 
     this.amount = ( amount !== undefined ) ? amount : 1.0;
     this.opacity = ( opacity !== undefined ) ? opacity : 1.0;
@@ -104,7 +105,9 @@ THREE.BloomBlendPass = function ( amount, opacity, resolution ) {
 
 };
 
-THREE.BloomBlendPass.prototype = {
+THREE.BloomBlendPass.prototype = Object.assign(Object.create(THREE.Pass.prototype), {
+
+    constructor: THREE.BloomBlendPass,
 
     render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
@@ -141,5 +144,5 @@ THREE.BloomBlendPass.prototype = {
         }
     }
 
-};
+});
 
